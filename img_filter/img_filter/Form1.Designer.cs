@@ -41,6 +41,7 @@ namespace img_filter
             this.button2 = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
@@ -154,11 +155,19 @@ namespace img_filter
             this.comboBox2.TabIndex = 12;
             this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
             // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(12, 27);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(757, 21);
+            this.textBox2.TabIndex = 13;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1013, 578);
+            this.Controls.Add(this.textBox2);
             this.Controls.Add(this.comboBox2);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.button2);
@@ -195,6 +204,7 @@ namespace img_filter
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.TextBox textBox2;
     }
 }
 

@@ -14,11 +14,10 @@ namespace img_filter
     public partial class Form1 : Form
     {
         private Mat MyImage;
-        private Mat blur = new Mat();
-        private Mat sobel = new Mat(); 
-        private Mat scharr = new Mat();
-        private Mat laplacian = new Mat();
-        private Mat canny = new Mat();
+        private Mat Filter = new Mat();
+        private Mat Threshold = new Mat();
+
+        private double threshold_Value;
 
         public Form1()
         {
@@ -63,35 +62,48 @@ namespace img_filter
                 case 0:
                     // 단순 흐림 
                     //입력, 출력, 커널크기, 앵커 (-1, -1)이 중심, 테두리 유형
-                    Cv2.Blur(MyImage, blur, new OpenCvSharp.Size(5, 5), new OpenCvSharp.Point(-1, -1), BorderTypes.Default);
+                    Cv2.Blur(MyImage, Filter, new OpenCvSharp.Size(5, 5), new OpenCvSharp.Point(-1, -1), BorderTypes.Default);
                     break;
                 case 1:
                     //박스 필터
-                    Cv2.BoxFilter(MyImage, blur, MatType.CV_8UC3, new OpenCvSharp.Size(7, 7), new OpenCvSharp.Point(-1, -1), true, BorderTypes.Default);
+                    Cv2.BoxFilter(MyImage, Filter, MatType.CV_8UC3, new OpenCvSharp.Size(7, 7), new OpenCvSharp.Point(-1, -1), true, BorderTypes.Default);
                     break;
                 case 2:
                     //중간값 흐림
-                    Cv2.MedianBlur(MyImage, blur, 9);
+                    Cv2.MedianBlur(MyImage, Filter, 9);
                     break;
                 case 3:
                     //가우시안 흐림
-                    Cv2.GaussianBlur(MyImage, blur, new OpenCvSharp.Size(3, 3), 1, 0, BorderTypes.Default);
+                    Cv2.GaussianBlur(MyImage, Filter, new OpenCvSharp.Size(3, 3), 1, 0, BorderTypes.Default);
                     break;
                 case 4:
                     //쌍방 필터
                     //과도한 노이즈 필터링이 필요한 오프라인에는 d = 9를 사용하는 것이 좋습니다.
                     //시그마 값이 크면 클수록 만화 처럼 보입니다.(50 ,50)
-                    Cv2.BilateralFilter(MyImage, blur, 9, 50, 50, BorderTypes.Default);
+                    Cv2.BilateralFilter(MyImage, Filter, 9, 50, 50, BorderTypes.Default);
                     break;
             }
 
-            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(blur);
+            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Filter);
 
         }
 
         //Threshold
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
+            //textBox에서 숫자를 전부 지우면 ""값이 들어와서 오류가 발생함
+            if(textBox1.Text == "")
+            {
+                threshold_Value = 0; 
+            }
+            else
+            {
+                threshold_Value = Convert.ToDouble(textBox1.Text);
+            }
+
+            Cv2.Threshold(Filter,Threshold, threshold_Value, 255, ThresholdTypes.Binary);
+
+            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Threshold);
 
         }
 
