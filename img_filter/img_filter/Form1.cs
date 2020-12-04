@@ -16,6 +16,7 @@ namespace img_filter
         private Mat MyImage;
         private Mat Filter = new Mat();
         private Mat Threshold = new Mat();
+        private Mat Edge = new Mat();
 
         private double threshold_Value;
 
@@ -31,11 +32,10 @@ namespace img_filter
                         "Gaussian",
                         "Bilateral"});
 
-            this.comboBox2.Items.AddRange(new object[] {"Item 1",
-                        "Item 2",
-                        "Item 3",
-                        "Item 4",
-                        "Item 5"});
+            this.comboBox2.Items.AddRange(new object[] {"Canny",
+                        "Sobel",
+                        "Scharr",
+                        "Laplacian"});
         }
 
         //이미지 불러오기
@@ -114,10 +114,29 @@ namespace img_filter
 
             switch (index)
             {
-                case 1:
-
+                case 0:
+                    //캐니 엣지
+                    Cv2.Canny(Filter, Edge, 100, 200, 3, true);
                     break;
+                case 1:
+                    //소벨 미분
+                    Cv2.Sobel(Filter, Edge, MatType.CV_32F, 1, 0, ksize: 3, scale: 1, delta: 0, BorderTypes.Default);
+                    Edge.ConvertTo(Edge, MatType.CV_8UC1);
+                    break;
+                case 2:
+                    //샤르필터
+                    Cv2.Scharr(Filter, Edge, MatType.CV_32F, 1, 0, scale: 1, delta: 0, BorderTypes.Default);
+                    Edge.ConvertTo(Edge, MatType.CV_8UC1);
+                    break;
+                case 3:
+                    //라플라이안
+                    Cv2.Laplacian(Filter, Edge, MatType.CV_32F, ksize: 3, scale: 1, delta: 0, BorderTypes.Default);
+                    Edge.ConvertTo(Edge, MatType.CV_8UC1);
+                    break;
+
             }
+
+            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Edge);
         }
 
         private void Form1_Load(object sender, EventArgs e)
