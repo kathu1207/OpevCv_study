@@ -38,19 +38,12 @@ namespace img_filter
                         "Laplacian"});
         }
 
-        //이미지 불러오기
+        //블럭화
         private void button1_Click(object sender, EventArgs e)
         {
-            MyImage = Cv2.ImRead("../../lena_Grayscale.png");
-
-            pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage);
+           
         }
 
-        //블럭화
-        private void button2_Click(object sender, EventArgs e)
-        {
-
-        }
 
         //Filter
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -105,38 +98,6 @@ namespace img_filter
 
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Threshold);
 
-        }
-
-        //Edge
-        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            int index = comboBox2.SelectedIndex;
-
-            switch (index)
-            {
-                case 0:
-                    //캐니 엣지
-                    Cv2.Canny(Filter, Edge, 100, 200, 3, true);
-                    break;
-                case 1:
-                    //소벨 미분
-                    Cv2.Sobel(Filter, Edge, MatType.CV_32F, 1, 0, ksize: 3, scale: 1, delta: 0, BorderTypes.Default);
-                    Edge.ConvertTo(Edge, MatType.CV_8UC1);
-                    break;
-                case 2:
-                    //샤르필터
-                    Cv2.Scharr(Filter, Edge, MatType.CV_32F, 1, 0, scale: 1, delta: 0, BorderTypes.Default);
-                    Edge.ConvertTo(Edge, MatType.CV_8UC1);
-                    break;
-                case 3:
-                    //라플라이안
-                    Cv2.Laplacian(Filter, Edge, MatType.CV_32F, ksize: 3, scale: 1, delta: 0, BorderTypes.Default);
-                    Edge.ConvertTo(Edge, MatType.CV_8UC1);
-                    break;
-
-            }
-
-            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Edge);
         }
 
         private void Form1_Load(object sender, EventArgs e)
