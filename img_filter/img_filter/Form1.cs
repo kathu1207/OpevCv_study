@@ -32,14 +32,13 @@ namespace img_filter
             DataTable table = new DataTable();
 
             table.Columns.Add("Index", typeof(string));
-            table.Columns.Add("X", typeof(string));
-            table.Columns.Add("Y", typeof(string));
-            table.Columns.Add("Size", typeof(string));
-            table.Columns.Add("GD", typeof(string));
-            table.Columns.Add("Area", typeof(string));
-            table.Columns.Add("Max", typeof(string));
-            table.Columns.Add("Main", typeof(string));
-            table.Columns.Add("Mean", typeof(string));   
+            table.Columns.Add("X, Y", typeof(string)); //중심점
+            table.Columns.Add("Size", typeof(string)); //넓이
+            table.Columns.Add("GD", typeof(string));   //절대값(바깥과 안쪽의 차이)
+            table.Columns.Add("Area", typeof(string)); //면적 
+            table.Columns.Add("Max", typeof(string));  //면적중 가장긴거
+            table.Columns.Add("Main", typeof(string)); //면적중 가장 짧은것
+            table.Columns.Add("Mean", typeof(string)); //면적의 평균
 
             dataGridView1.DataSource = table;
 
@@ -55,8 +54,8 @@ namespace img_filter
 
             Mat preprocess_Value = new Mat();
 
-            Cv2.InRange(Threshold, new Scalar(0, 127, 127), new Scalar(100, 255, 255), preprocess_Value);
-            
+            Cv2.InRange(Threshold, new Scalar(127, 127, 127), new Scalar(255, 255, 255), preprocess_Value);
+
             //Cv2.FindContours(원본 배열, 검출된 윤곽선, 계층 구조, 검색 방법, 근사 방법, 오프셋)
             Cv2.FindContours(preprocess_Value, out contours, out hierarchy, RetrievalModes.Tree, ContourApproximationModes.ApproxTC89KCOS);
 
@@ -73,7 +72,7 @@ namespace img_filter
 
                 //Cv2.FillConvexPoly(dst, hull, Scalar.White);
                 //Cv2.Polylines(dst, new Point[][] { hull }, true, Scalar.White, 1);
-                Cv2.DrawContours(dst, new OpenCvSharp.Point[][] { hull }, -1, Scalar.White, 1);
+                Cv2.DrawContours(dst, new OpenCvSharp.Point[][] { hull }, -1, Scalar.Red, 1);
                 Cv2.Circle(dst, (int)(moments.M10 / moments.M00), (int)(moments.M01 / moments.M00), 5, Scalar.Black, -1);
             }
             Cv2.ImShow("dst", dst);
@@ -140,7 +139,7 @@ namespace img_filter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            MyImage = Cv2.ImRead("../../car.jpg");
+            MyImage = Cv2.ImRead("../../lena_Grayscale.png");
 
             pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage);
 
