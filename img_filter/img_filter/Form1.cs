@@ -139,7 +139,7 @@ namespace img_filter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            MyImage = Cv2.ImRead("../../car.jpg");
+            MyImage = Cv2.ImRead("../../lena_Grayscale.png");
 
             pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage);
 
