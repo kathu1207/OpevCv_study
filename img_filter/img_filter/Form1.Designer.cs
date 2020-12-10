@@ -131,7 +131,7 @@ namespace img_filter
             this.dataGridView1.Location = new System.Drawing.Point(12, 417);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowTemplate.Height = 23;
-            this.dataGridView1.Size = new System.Drawing.Size(754, 136);
+            this.dataGridView1.Size = new System.Drawing.Size(857, 136);
             this.dataGridView1.TabIndex = 10;
             // 
             // Form1

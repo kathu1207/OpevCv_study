@@ -16,6 +16,9 @@ namespace img_filter
         private Mat MyImage;
         private Mat Filter = new Mat();
         private Mat Threshold = new Mat();
+        double threshold_Value;
+
+        DataTable table = new DataTable();
 
         public Form1()
         {
@@ -29,15 +32,13 @@ namespace img_filter
                         "Gaussian",
                         "Bilateral"});
 
-            DataTable table = new DataTable();
-
             table.Columns.Add("Index", typeof(string));
             table.Columns.Add("X, Y", typeof(string)); //중심점
-            table.Columns.Add("Size", typeof(string)); //넓이
+            table.Columns.Add("Size", typeof(string)); //너비
             table.Columns.Add("GD", typeof(string));   //절대값(바깥과 안쪽의 차이)
             table.Columns.Add("Area", typeof(string)); //면적 
-            table.Columns.Add("Max", typeof(string));  //면적중 가장긴거
-            table.Columns.Add("Main", typeof(string)); //면적중 가장 짧은것
+            table.Columns.Add("Max", typeof(string));  //면적중 가장 긴 부분
+            table.Columns.Add("Main", typeof(string)); //면적중 가장 짧은 부분
             table.Columns.Add("Mean", typeof(string)); //면적의 평균
 
             dataGridView1.DataSource = table;
@@ -47,35 +48,52 @@ namespace img_filter
         //블럭화
         private void button1_Click(object sender, EventArgs e)
         {
+            ((DataTable)dataGridView1.DataSource).Rows.Clear(); //Row값만 초기화
+
+            int counter = 1;
             Mat dst = Threshold.Clone();
+
+            double img_area = MyImage.Width * MyImage.Height;
+
 
             OpenCvSharp.Point[][] contours; //윤곽선의 실제 값
             HierarchyIndex[] hierarchy;    // 윤곽선들의 계층 구조
 
             Mat preprocess_Value = new Mat();
 
-            Cv2.InRange(Threshold, new Scalar(127, 127, 127), new Scalar(255, 255, 255), preprocess_Value);
+            Cv2.InRange(Threshold, new Scalar(threshold_Value, threshold_Value, threshold_Value), new Scalar(255, 255, 255), preprocess_Value);
 
             //Cv2.FindContours(원본 배열, 검출된 윤곽선, 계층 구조, 검색 방법, 근사 방법, 오프셋)
             Cv2.FindContours(preprocess_Value, out contours, out hierarchy, RetrievalModes.Tree, ContourApproximationModes.ApproxTC89KCOS);
 
             foreach (OpenCvSharp.Point[] p in contours)
             {
-                double length = Cv2.ArcLength(p, true);
-                double area = Cv2.ContourArea(p, true);
+                double length = Cv2.ArcLength(p, true); //길이
+                double area = Cv2.ContourArea(p, true); //면적
 
-                if (length < 100 && area < 1000 && p.Length < 5) continue;
+                if (length < 200 || length > 2000) continue; 
 
-                bool convex = Cv2.IsContourConvex(p);
-                OpenCvSharp.Point[] hull = Cv2.ConvexHull(p, true);
-                Moments moments = Cv2.Moments(p, false);
+                Rect boundingRect = Cv2.BoundingRect(p); //사각형 계산
+                
+              
+                OpenCvSharp.Point[] hull = Cv2.ConvexHull(p, true); //블록
+                Moments moments = Cv2.Moments(p, false); //중심점 
 
+                Cv2.Rectangle(dst, boundingRect, Scalar.Red, 2); //사각형 그리기
                 //Cv2.FillConvexPoly(dst, hull, Scalar.Red); //내부 채우기
-                Cv2.Polylines(dst, new OpenCvSharp.Point[][] { hull }, true, Scalar.Red, 1); //다각형 그리기
-                //Cv2.DrawContours(dst, new OpenCvSharp.Point[][] { hull }, -1, Scalar.Red, 1); //윤곽석 그리기
-                //Cv2.Circle(dst, (int)(moments.M10 / moments.M00), (int)(moments.M01 / moments.M00), 5, Scalar.Black, -1); //중심점 그리기
+                //Cv2.Polylines(dst, new OpenCvSharp.Point[][] { hull }, true, Scalar.Red, 1); //다각형 그리기
+                
+                Cv2.DrawContours(dst, new OpenCvSharp.Point[][] { hull }, -1, Scalar.Black, 3); //윤곽석 그리기
+
+                double mean = (boundingRect.Width + boundingRect.Height) / 2;
+
+                table.Rows.Add(" " + counter++, " "+ (int)(moments.M10 / moments.M00) + ", "+ (int)(moments.M01 / moments.M00)
+                    ," " + Math.Truncate(length * 10)/10," "+Math.Abs(area- img_area),"" + area,
+                    " "+Math.Max(boundingRect.Width, boundingRect.Height),
+                    " " + Math.Min(boundingRect.Width, boundingRect.Height)," "+ mean);
+
+
             }
-            Cv2.ImShow("dst", dst);
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(dst);
         }
 
@@ -119,7 +137,6 @@ namespace img_filter
         //Threshold
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            double threshold_Value;
 
             //textBox에서 숫자를 전부 지우면 ""값이 들어와서 오류가 발생함
             if(textBox1.Text == "")
@@ -139,7 +156,7 @@ namespace img_filter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            MyImage = Cv2.ImRead("../../lena_Grayscale.png");
+            MyImage = Cv2.ImRead("../../Figure.png");
 
             pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage);
 
