@@ -16,7 +16,7 @@ namespace img_filter
         private Mat MyImage;
         private Mat Filter = new Mat();
         private Mat Threshold = new Mat();
-        double threshold_Value;
+        int threshold_Value;
 
         DataTable table = new DataTable();
 
@@ -71,30 +71,32 @@ namespace img_filter
                 double length = Cv2.ArcLength(p, true); //길이
                 double area = Cv2.ContourArea(p, true); //면적
 
-                if (length < 200 || length > 2000) continue; 
+                if (length < 200 || length > 2000) continue;
 
                 Rect boundingRect = Cv2.BoundingRect(p); //사각형 계산
-                
-              
+
+
                 OpenCvSharp.Point[] hull = Cv2.ConvexHull(p, true); //블록
                 Moments moments = Cv2.Moments(p, false); //중심점 
 
                 Cv2.Rectangle(dst, boundingRect, Scalar.Red, 2); //사각형 그리기
-                //Cv2.FillConvexPoly(dst, hull, Scalar.Red); //내부 채우기
-                //Cv2.Polylines(dst, new OpenCvSharp.Point[][] { hull }, true, Scalar.Red, 1); //다각형 그리기
-                
+                                                                 //Cv2.FillConvexPoly(dst, hull, Scalar.Red); //내부 채우기
+                                                                 //Cv2.Polylines(dst, new OpenCvSharp.Point[][] { hull }, true, Scalar.Red, 1); //다각형 그리기
+
                 Cv2.DrawContours(dst, new OpenCvSharp.Point[][] { hull }, -1, Scalar.Black, 3); //윤곽석 그리기
 
                 double mean = (boundingRect.Width + boundingRect.Height) / 2;
 
-                table.Rows.Add(" " + counter++, " "+ (int)(moments.M10 / moments.M00) + ", "+ (int)(moments.M01 / moments.M00)
-                    ," " + Math.Truncate(length * 10)/10," "+Math.Abs(area- img_area),"" + area,
-                    " "+Math.Max(boundingRect.Width, boundingRect.Height),
-                    " " + Math.Min(boundingRect.Width, boundingRect.Height)," "+ mean);
+                table.Rows.Add(" " + counter++, " " + (int)(moments.M10 / moments.M00) + ", " + (int)(moments.M01 / moments.M00)
+                    , " " + Math.Truncate(length * 10) / 10, " " + Math.Abs(area - img_area), "" + area,
+                    " " + Math.Max(boundingRect.Width, boundingRect.Height),
+                    " " + Math.Min(boundingRect.Width, boundingRect.Height), " " + mean);
 
 
             }
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(dst);
+
+
         }
 
 
@@ -137,18 +139,18 @@ namespace img_filter
         //Threshold
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-
             //textBox에서 숫자를 전부 지우면 ""값이 들어와서 오류가 발생함
-            if(textBox1.Text == "")
+            if (int.TryParse(textBox1.Text, out threshold_Value))
             {
-                threshold_Value = 0; 
+                //형변환 하는 코드이지만 int.TryParse에서 OUT을 이용해 받아가기 때문에 필요없어짐 
+                //threshold_Value = Convert.ToInt32(textBox1.Text);  
             }
             else
             {
-                threshold_Value = Convert.ToDouble(textBox1.Text);
+                threshold_Value = 0;
             }
 
-            Cv2.Threshold(Filter,Threshold, threshold_Value, 255, ThresholdTypes.Binary);
+            Cv2.Threshold(Filter, Threshold, threshold_Value, 255, ThresholdTypes.Binary);
 
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Threshold);
 
