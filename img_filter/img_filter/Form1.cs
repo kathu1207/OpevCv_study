@@ -40,9 +40,14 @@ namespace img_filter
             table.Columns.Add("Max", typeof(string));  //면적중 가장 긴 부분
             table.Columns.Add("Main", typeof(string)); //면적중 가장 짧은 부분
             table.Columns.Add("Mean", typeof(string)); //면적의 평균
+            table.Columns.Add("boundingRect", typeof(string));
 
+            dataGridView1.RowHeadersVisible = false; //왼쪽에 뜨는 컬럼창 삭제          
             dataGridView1.DataSource = table;
+            dataGridView1.Columns[8].Visible = false;//특정열 안보이게 하기 
 
+            this.AllowDrop = true;
+            this.DragEnter += new DragEventHandler(Form1_DragEnter);
         }
 
         //블럭화
@@ -61,17 +66,21 @@ namespace img_filter
 
             Mat preprocess_Value = new Mat();
 
-            Cv2.InRange(Threshold, new Scalar(threshold_Value, threshold_Value, threshold_Value), new Scalar(255, 255, 255), preprocess_Value);
+            //색상 공간 변환
+            Cv2.InRange(Threshold, new Scalar(threshold_Value, threshold_Value, threshold_Value), 
+                new Scalar(255, 255, 255), preprocess_Value);
 
             //Cv2.FindContours(원본 배열, 검출된 윤곽선, 계층 구조, 검색 방법, 근사 방법, 오프셋)
-            Cv2.FindContours(preprocess_Value, out contours, out hierarchy, RetrievalModes.Tree, ContourApproximationModes.ApproxTC89KCOS);
+            Cv2.FindContours(preprocess_Value, out contours, out hierarchy, RetrievalModes.Tree, 
+                ContourApproximationModes.ApproxTC89KCOS);
 
             foreach (OpenCvSharp.Point[] p in contours)
             {
+
                 double length = Cv2.ArcLength(p, true); //길이
                 double area = Cv2.ContourArea(p, true); //면적
 
-                if (length < 200 || length > 2000) continue;
+                if (length < 200 || length > 2000) continue; //길이가 너무 작은 윤관석 삭제 
 
                 Rect boundingRect = Cv2.BoundingRect(p); //사각형 계산
 
@@ -85,20 +94,24 @@ namespace img_filter
 
                 Cv2.DrawContours(dst, new OpenCvSharp.Point[][] { hull }, -1, Scalar.Black, 3); //윤곽석 그리기
 
+               
                 double mean = (boundingRect.Width + boundingRect.Height) / 2;
 
-                table.Rows.Add(" " + counter++, " " + (int)(moments.M10 / moments.M00) + ", " + (int)(moments.M01 / moments.M00)
-                    , " " + Math.Truncate(length * 10) / 10, " " + Math.Abs(area - img_area), "" + area,
+                table.Rows.Add(" " + counter++,
+                    " " + (int)(moments.M10 / moments.M00) + ", " + (int)(moments.M01 / moments.M00),
+                    " " + Math.Truncate(length * 10) / 10,
+                    " " + Math.Abs(area - img_area),
+                    " " + area,
                     " " + Math.Max(boundingRect.Width, boundingRect.Height),
-                    " " + Math.Min(boundingRect.Width, boundingRect.Height), " " + mean);
-
+                    " " + Math.Min(boundingRect.Width, boundingRect.Height),
+                    " " + mean,
+                    " " + boundingRect);
 
             }
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(dst);
 
 
         }
-
 
         //Filter
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -110,11 +123,13 @@ namespace img_filter
                 case 0:
                     // 단순 흐림 
                     //입력, 출력, 커널크기, 앵커 (-1, -1)이 중심, 테두리 유형
-                    Cv2.Blur(MyImage, Filter, new OpenCvSharp.Size(5, 5), new OpenCvSharp.Point(-1, -1), BorderTypes.Default);
+                    Cv2.Blur(MyImage, Filter, new OpenCvSharp.Size(5, 5), new OpenCvSharp.Point(-1, -1), 
+                        BorderTypes.Default);
                     break;
                 case 1:
                     //박스 필터
-                    Cv2.BoxFilter(MyImage, Filter, MatType.CV_8UC3, new OpenCvSharp.Size(7, 7), new OpenCvSharp.Point(-1, -1), true, BorderTypes.Default);
+                    Cv2.BoxFilter(MyImage, Filter, MatType.CV_8UC3, new OpenCvSharp.Size(7, 7), 
+                        new OpenCvSharp.Point(-1, -1), true, BorderTypes.Default);
                     break;
                 case 2:
                     //중간값 흐림
@@ -158,10 +173,29 @@ namespace img_filter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            MyImage = Cv2.ImRead("../../Figure.png");
-
-            pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage);
 
         }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            Mat dst = Threshold.Clone();
+
+            Rect boundingRect = (Rect)dataGridView1.Rows[e.RowIndex].Cells[9].Value;
+
+            Cv2.Rectangle(dst, boundingRect, Scalar.Green, 2);
+        }
+
+        #region 드래그
+        void Form1_DragEnter(object sender, DragEventArgs e)
+        {
+            var data = e.Data.GetData(DataFormats.FileDrop);
+
+            var fileName = data as string[];
+
+            pictureBox1.Image = Image.FromFile(fileName[0]);
+
+            MyImage = Cv2.ImRead(fileName[0]);
+        }
+        #endregion
     }
 }
