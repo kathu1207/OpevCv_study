@@ -34,6 +34,13 @@ namespace img_filter
 
             this.button1.Click += new System.EventHandler(this.button1_Click);
 
+            this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
+
+            trackBar1.Maximum = 255;
+            trackBar1.TickFrequency = 10;
+            trackBar1.LargeChange = 3;
+            trackBar1.SmallChange = 1;
+
             this.comboBox1.Items.AddRange(new object[] {"Blur",
                         "Box",
                         "Median",
@@ -65,6 +72,7 @@ namespace img_filter
             clickPoint = imgPoint;
 
             pictureBox1.Invalidate();
+
         }
 
         //블럭화
@@ -168,25 +176,6 @@ namespace img_filter
 
         }
 
-        //Threshold
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-            //textBox에서 숫자를 전부 지우면 ""값이 들어와서 오류가 발생함
-            if (int.TryParse(textBox1.Text, out threshold_Value))
-            {
-                //형변환 하는 코드이지만 int.TryParse에서 OUT을 이용해 받아가기 때문에 필요없어짐 
-                //threshold_Value = Convert.ToInt32(textBox1.Text);  
-            }
-            else
-            {
-                threshold_Value = 0;
-            }
-
-            Cv2.Threshold(Filter, Threshold, threshold_Value, 255, ThresholdTypes.Binary);
-
-            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Threshold);
-
-        }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -220,12 +209,12 @@ namespace img_filter
 
             if (lines > 0)
             {
-                ratio *= 2F;
+                ratio *= 1.1F;
                 if (ratio > 100.0) ratio = 100.0;
             }
             else if (lines < 0)
             {
-                ratio *= 0.5F;
+                ratio *= 0.9F;
                 if (ratio < 1) ratio = 1;
             }
 
@@ -234,6 +223,7 @@ namespace img_filter
             imgRect.X = (int)Math.Round(pb.Width / 2 - imgPoint.X * ratio);
             imgRect.Y = (int)Math.Round(pb.Height / 2 - imgPoint.Y * ratio);
 
+            //이미지가 범위를 벗어난 경우를 대비
             if (imgRect.X > 0) imgRect.X = 0;
             if (imgRect.Y > 0) imgRect.Y = 0;
             if (imgRect.X + imgRect.Width < pictureBox1.Width) imgRect.X = pictureBox1.Width - imgRect.Width;
@@ -285,5 +275,17 @@ namespace img_filter
             pictureBox1.Invalidate();
         }
         #endregion
+
+        //Threshold
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+            threshold_Value = trackBar1.Value;
+
+            Cv2.Threshold(Filter, Threshold, threshold_Value, 255, ThresholdTypes.Binary);
+
+            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Threshold);
+
+            label5.Text = "" + trackBar1.Value;
+        }
     }
 }
