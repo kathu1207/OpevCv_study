@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,13 @@ namespace img_filter
         private Mat Filter = new Mat();
         private Mat Threshold = new Mat();
         int threshold_Value;
+
+        //확대 축소 관련 변수 
+        private System.Drawing.Point LastPoint;
+        private double ratio = 1.0F; //확대, 축소 비율
+        private System.Drawing.Point imgPoint;
+        private Rectangle imgRect;
+        private System.Drawing.Point clickPoint;
 
         DataTable table = new DataTable();
 
@@ -47,7 +55,16 @@ namespace img_filter
             dataGridView1.Columns[8].Visible = false;//특정열 안보이게 하기 
 
             this.AllowDrop = true;
-            this.DragEnter += new DragEventHandler(Form1_DragEnter);
+            this.DragEnter += new DragEventHandler(pictureBox1_DragEnter);
+
+            pictureBox1.MouseWheel += new MouseEventHandler(pictureBox1_MouseWheel);
+
+            imgPoint = new System.Drawing.Point(pictureBox1.Width / 2, pictureBox1.Height / 2);
+            imgRect = new Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height); //확대, 축소 이미지를 Handling 
+            ratio = 1.0;
+            clickPoint = imgPoint;
+
+            pictureBox1.Invalidate();
         }
 
         //블럭화
@@ -171,11 +188,6 @@ namespace img_filter
 
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             Mat dst = Threshold.Clone();
@@ -186,15 +198,91 @@ namespace img_filter
         }
 
         #region 드래그
-        void Form1_DragEnter(object sender, DragEventArgs e)
+        void pictureBox1_DragEnter(object sender, DragEventArgs e)
         {
             var data = e.Data.GetData(DataFormats.FileDrop);
 
             var fileName = data as string[];
 
+            MyImage = Cv2.ImRead(fileName[0]);
+
             pictureBox1.Image = Image.FromFile(fileName[0]);
 
-            MyImage = Cv2.ImRead(fileName[0]);
+
+        }
+        #endregion
+
+        #region 확대 축소 
+        private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            int lines = e.Delta * SystemInformation.MouseWheelScrollLines / 120;
+            PictureBox pb = (PictureBox)sender;
+
+            if (lines > 0)
+            {
+                ratio *= 2F;
+                if (ratio > 100.0) ratio = 100.0;
+            }
+            else if (lines < 0)
+            {
+                ratio *= 0.5F;
+                if (ratio < 1) ratio = 1;
+            }
+
+            imgRect.Width = (int)Math.Round(pictureBox1.Width * ratio);
+            imgRect.Height = (int)Math.Round(pictureBox1.Height * ratio);
+            imgRect.X = (int)Math.Round(pb.Width / 2 - imgPoint.X * ratio);
+            imgRect.Y = (int)Math.Round(pb.Height / 2 - imgPoint.Y * ratio);
+
+            if (imgRect.X > 0) imgRect.X = 0;
+            if (imgRect.Y > 0) imgRect.Y = 0;
+            if (imgRect.X + imgRect.Width < pictureBox1.Width) imgRect.X = pictureBox1.Width - imgRect.Width;
+            if (imgRect.Y + imgRect.Height < pictureBox1.Height) imgRect.Y = pictureBox1.Height - imgRect.Height;
+
+            pictureBox1.Invalidate();
+        }
+
+        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        {       
+            if (pictureBox1.Image != null)
+            {
+                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+                e.Graphics.DrawImage(pictureBox1.Image, imgRect);
+                pictureBox1.Focus();
+            }
+        }
+
+        
+        //마우스에 따른 시점 이동 
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                clickPoint = new System.Drawing.Point(e.X, e.Y);
+            }
+            pictureBox1.Invalidate();
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                imgRect.X = imgRect.X + (int)Math.Round((double)(e.X - clickPoint.X) / 5);
+                if (imgRect.X >= 0) imgRect.X = 0;
+                if (Math.Abs(imgRect.X) >= Math.Abs(imgRect.Width - pictureBox1.Width)) imgRect.X = -(imgRect.Width - pictureBox1.Width);
+                imgRect.Y = imgRect.Y + (int)Math.Round((double)(e.Y - clickPoint.Y) / 5);
+                if (imgRect.Y >= 0) imgRect.Y = 0;
+                if (Math.Abs(imgRect.Y) >= Math.Abs(imgRect.Height - pictureBox1.Height)) imgRect.Y = -(imgRect.Height - pictureBox1.Height);
+            }
+            else
+            {
+                LastPoint = e.Location;
+            }
+
+            imgPoint = new System.Drawing.Point(e.X, e.Y);
+
+            pictureBox1.Invalidate();
         }
         #endregion
     }
