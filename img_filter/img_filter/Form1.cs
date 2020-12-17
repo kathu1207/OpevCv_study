@@ -10,6 +10,7 @@ namespace img_filter
 {
     public partial class Form1 : Form
     {
+        //이미지 관련 변수
         private Mat MyImage;
         private Mat Filter = new Mat();
         private Mat Threshold = new Mat();
@@ -17,32 +18,36 @@ namespace img_filter
 
         //확대 축소 관련 변수 
         private System.Drawing.Point LastPoint;
-        private double ratio = 1.0F; //확대, 축소 비율
+        private double ratio = 1.0F; 
         private System.Drawing.Point imgPoint;
         private Rectangle imgRect;
         private System.Drawing.Point clickPoint;
 
+        //테이블 선언 
         DataTable table = new DataTable();
 
         public Form1()
         {
             InitializeComponent();
 
+            //이벤트 핸들러
             this.button1.Click += new System.EventHandler(this.button1_Click);
-
             this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
 
+         
             trackBar1.Maximum = 255;
             trackBar1.TickFrequency = 10;
             trackBar1.LargeChange = 3;
             trackBar1.SmallChange = 1;
 
+            //콤보박스
             this.comboBox1.Items.AddRange(new object[] {"Blur",
                         "Box",
                         "Median",
                         "Gaussian",
                         "Bilateral"});
 
+            //테이블 
             table.Columns.Add("Index", typeof(string));
             table.Columns.Add("X, Y", typeof(string)); //중심점
             table.Columns.Add("Size", typeof(string)); //너비
@@ -53,11 +58,12 @@ namespace img_filter
             table.Columns.Add("Mean", typeof(string)); //면적의 평균
             table.Columns.Add("boundingRect", typeof(Rect));
 
+            //테이블 설정 
             dataGridView1.RowHeadersVisible = false; //왼쪽에 뜨는 컬럼창 삭제          
             dataGridView1.DataSource = table;
-            
-            //dataGridView1.Columns[8].Visible = false;//특정열 안보이게 하기 
+            dataGridView1.Columns[8].Visible = false;//특정열 안보이게 하기 
 
+            //확대 축소
             this.AllowDrop = true;
             this.DragEnter += new DragEventHandler(pictureBox1_DragEnter);
 
@@ -81,7 +87,6 @@ namespace img_filter
             Mat dst = Threshold.Clone();
 
             double img_area = MyImage.Width * MyImage.Height;
-
 
             OpenCvSharp.Point[][] contours; //윤곽선의 실제 값
             HierarchyIndex[] hierarchy;    // 윤곽선들의 계층 구조
@@ -182,6 +187,7 @@ namespace img_filter
 
             Rect Value_boundingRect = (Rect)dataGridView1.Rows[e.RowIndex].Cells[8].Value;
 
+            
             Cv2.Rectangle(MyImage_clone, Value_boundingRect, Scalar.Green, 2);
 
             pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage_clone);
@@ -244,7 +250,6 @@ namespace img_filter
             }
         }
 
-        
         //마우스에 따른 시점 이동 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {

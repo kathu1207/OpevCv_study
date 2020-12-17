@@ -50,7 +50,7 @@ namespace img_filter
             // 
             this.pictureBox1.Location = new System.Drawing.Point(12, 34);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(360, 360);
+            this.pictureBox1.Size = new System.Drawing.Size(400, 400);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
@@ -60,16 +60,16 @@ namespace img_filter
             // 
             // pictureBox2
             // 
-            this.pictureBox2.Location = new System.Drawing.Point(406, 34);
+            this.pictureBox2.Location = new System.Drawing.Point(445, 34);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(360, 360);
+            this.pictureBox2.Size = new System.Drawing.Size(400, 400);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 1;
             this.pictureBox2.TabStop = false;
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(809, 320);
+            this.button1.Location = new System.Drawing.Point(894, 342);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(183, 43);
             this.button1.TabIndex = 2;
@@ -89,7 +89,7 @@ namespace img_filter
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(550, 19);
+            this.label2.Location = new System.Drawing.Point(589, 19);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(69, 12);
             this.label2.TabIndex = 4;
@@ -98,7 +98,7 @@ namespace img_filter
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(807, 147);
+            this.label3.Location = new System.Drawing.Point(892, 169);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(32, 12);
             this.label3.TabIndex = 6;
@@ -107,7 +107,7 @@ namespace img_filter
             // comboBox1
             // 
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(877, 139);
+            this.comboBox1.Location = new System.Drawing.Point(962, 161);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(115, 20);
             this.comboBox1.TabIndex = 7;
@@ -116,7 +116,7 @@ namespace img_filter
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(807, 195);
+            this.label4.Location = new System.Drawing.Point(892, 217);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(62, 12);
             this.label4.TabIndex = 8;
@@ -125,16 +125,16 @@ namespace img_filter
             // dataGridView1
             // 
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(12, 417);
+            this.dataGridView1.Location = new System.Drawing.Point(12, 463);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowTemplate.Height = 23;
-            this.dataGridView1.Size = new System.Drawing.Size(857, 136);
+            this.dataGridView1.Size = new System.Drawing.Size(857, 184);
             this.dataGridView1.TabIndex = 10;
             this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // trackBar1
             // 
-            this.trackBar1.Location = new System.Drawing.Point(809, 220);
+            this.trackBar1.Location = new System.Drawing.Point(894, 242);
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Size = new System.Drawing.Size(183, 45);
             this.trackBar1.TabIndex = 11;
@@ -143,7 +143,7 @@ namespace img_filter
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(894, 195);
+            this.label5.Location = new System.Drawing.Point(979, 217);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(0, 12);
             this.label5.TabIndex = 12;
@@ -152,7 +152,7 @@ namespace img_filter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1013, 617);
+            this.ClientSize = new System.Drawing.Size(1138, 680);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.trackBar1);
             this.Controls.Add(this.dataGridView1);
