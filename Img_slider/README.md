@@ -4,8 +4,8 @@
  
  + 실행 
  
-- <img src="https://github.com/kathu1207/opevCv_study/blob/master/Img_slider/before.PNG?raw=true" width="90%"></img>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="https://github.com/kathu1207/opevCv_study/blob/master/Img_slider/before.PNG?raw=true" width="90%"></img>
 
  + 결과
  
- - <img src="https://github.com/kathu1207/opevCv_study/blob/master/Img_slider/after.PNG?raw=true" width="90%"></img>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <img src="https://github.com/kathu1207/opevCv_study/blob/master/Img_slider/after.PNG?raw=true" width="90%"></img>
