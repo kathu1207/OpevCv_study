@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using OpenCvSharp;
+
 
 namespace img_filter
 {
@@ -55,11 +51,12 @@ namespace img_filter
             table.Columns.Add("Max", typeof(string));  //면적중 가장 긴 부분
             table.Columns.Add("Main", typeof(string)); //면적중 가장 짧은 부분
             table.Columns.Add("Mean", typeof(string)); //면적의 평균
-            table.Columns.Add("boundingRect", typeof(string));
+            table.Columns.Add("boundingRect", typeof(Rect));
 
             dataGridView1.RowHeadersVisible = false; //왼쪽에 뜨는 컬럼창 삭제          
             dataGridView1.DataSource = table;
-            dataGridView1.Columns[8].Visible = false;//특정열 안보이게 하기 
+            
+            //dataGridView1.Columns[8].Visible = false;//특정열 안보이게 하기 
 
             this.AllowDrop = true;
             this.DragEnter += new DragEventHandler(pictureBox1_DragEnter);
@@ -130,7 +127,7 @@ namespace img_filter
                     " " + Math.Max(boundingRect.Width, boundingRect.Height),
                     " " + Math.Min(boundingRect.Width, boundingRect.Height),
                     " " + mean,
-                    " " + boundingRect);
+                    boundingRect);
 
             }
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(dst);
@@ -176,14 +173,18 @@ namespace img_filter
 
         }
 
-
+        //결과이미지중 원하는 결과 확인하기 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            Mat dst = Threshold.Clone();
+            Mat MyImage_clone = MyImage.Clone();
 
-            Rect boundingRect = (Rect)dataGridView1.Rows[e.RowIndex].Cells[9].Value;
+            pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage);
 
-            Cv2.Rectangle(dst, boundingRect, Scalar.Green, 2);
+            Rect Value_boundingRect = (Rect)dataGridView1.Rows[e.RowIndex].Cells[8].Value;
+
+            Cv2.Rectangle(MyImage_clone, Value_boundingRect, Scalar.Green, 2);
+
+            pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage_clone);
         }
 
         #region 드래그
@@ -287,5 +288,6 @@ namespace img_filter
 
             label5.Text = "" + trackBar1.Value;
         }
+
     }
 }
