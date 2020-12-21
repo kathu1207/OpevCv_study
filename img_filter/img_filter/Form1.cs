@@ -5,7 +5,6 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using OpenCvSharp;
 
-
 namespace img_filter
 {
     public partial class Form1 : Form
@@ -34,7 +33,6 @@ namespace img_filter
             this.button1.Click += new System.EventHandler(this.button1_Click);
             this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
 
-         
             trackBar1.Maximum = 255;
             trackBar1.TickFrequency = 10;
             trackBar1.LargeChange = 3;
@@ -68,29 +66,22 @@ namespace img_filter
             this.DragEnter += new DragEventHandler(pictureBox1_DragEnter);
 
             pictureBox1.MouseWheel += new MouseEventHandler(pictureBox1_MouseWheel);
-
             imgPoint = new System.Drawing.Point(pictureBox1.Width / 2, pictureBox1.Height / 2);
             imgRect = new Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height); //확대, 축소 이미지를 Handling 
             ratio = 1.0;
             clickPoint = imgPoint;
-
             pictureBox1.Invalidate();
-
         }
 
         //블럭화
         private void button1_Click(object sender, EventArgs e)
         {
             ((DataTable)dataGridView1.DataSource).Rows.Clear(); //Row값만 초기화
-
             int counter = 1;
             Mat dst = Threshold.Clone();
-
             double img_area = MyImage.Width * MyImage.Height;
-
             OpenCvSharp.Point[][] contours; //윤곽선의 실제 값
             HierarchyIndex[] hierarchy;    // 윤곽선들의 계층 구조
-
             Mat preprocess_Value = new Mat();
 
             //색상 공간 변환
@@ -103,27 +94,17 @@ namespace img_filter
 
             foreach (OpenCvSharp.Point[] p in contours)
             {
-
                 double length = Cv2.ArcLength(p, true); //길이
                 double area = Cv2.ContourArea(p, true); //면적
-
-                if (length < 200 || length > 2000) continue; //길이가 너무 작은 윤관석 삭제 
-
+                                                                 //if (length < 200 || length > 2000) continue; //길이가 너무 작은 윤관석 삭제 
                 Rect boundingRect = Cv2.BoundingRect(p); //사각형 계산
-
-
                 OpenCvSharp.Point[] hull = Cv2.ConvexHull(p, true); //블록
                 Moments moments = Cv2.Moments(p, false); //중심점 
-
                 Cv2.Rectangle(dst, boundingRect, Scalar.Red, 2); //사각형 그리기
                                                                  //Cv2.FillConvexPoly(dst, hull, Scalar.Red); //내부 채우기
                                                                  //Cv2.Polylines(dst, new OpenCvSharp.Point[][] { hull }, true, Scalar.Red, 1); //다각형 그리기
-
                 Cv2.DrawContours(dst, new OpenCvSharp.Point[][] { hull }, -1, Scalar.Black, 3); //윤곽석 그리기
-
-               
                 double mean = (boundingRect.Width + boundingRect.Height) / 2;
-
                 table.Rows.Add(" " + counter++,
                     " " + (int)(moments.M10 / moments.M00) + ", " + (int)(moments.M01 / moments.M00),
                     " " + Math.Truncate(length * 10) / 10,
@@ -133,18 +114,13 @@ namespace img_filter
                     " " + Math.Min(boundingRect.Width, boundingRect.Height),
                     " " + mean,
                     boundingRect);
-
             }
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(dst);
-
-
         }
-
         //Filter
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             int index = comboBox1.SelectedIndex;
-
             switch (index)
             {
                 case 0:
@@ -173,38 +149,26 @@ namespace img_filter
                     Cv2.BilateralFilter(MyImage, Filter, 9, 50, 50, BorderTypes.Default);
                     break;
             }
-
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Filter);
-
         }
 
         //결과이미지중 원하는 결과 확인하기 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             Mat MyImage_clone = MyImage.Clone();
-
             pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage);
-
             Rect Value_boundingRect = (Rect)dataGridView1.Rows[e.RowIndex].Cells[8].Value;
-
-            
             Cv2.Rectangle(MyImage_clone, Value_boundingRect, Scalar.Green, 2);
-
             pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage_clone);
         }
-
+        
         #region 드래그
         void pictureBox1_DragEnter(object sender, DragEventArgs e)
         {
             var data = e.Data.GetData(DataFormats.FileDrop);
-
             var fileName = data as string[];
-
             MyImage = Cv2.ImRead(fileName[0]);
-
             pictureBox1.Image = Image.FromFile(fileName[0]);
-
-
         }
         #endregion
 
@@ -217,25 +181,29 @@ namespace img_filter
             if (lines > 0)
             {
                 ratio *= 1.1F;
-                if (ratio > 100.0) ratio = 100.0;
+                if (ratio > 100.0)
+                {
+                    ratio = 100.0;
+                }
             }
             else if (lines < 0)
             {
                 ratio *= 0.9F;
-                if (ratio < 1) ratio = 1;
+                if (ratio < 1)
+                {
+                    ratio = 1;
+                }
             }
-
             imgRect.Width = (int)Math.Round(pictureBox1.Width * ratio);
             imgRect.Height = (int)Math.Round(pictureBox1.Height * ratio);
             imgRect.X = (int)Math.Round(pb.Width / 2 - imgPoint.X * ratio);
             imgRect.Y = (int)Math.Round(pb.Height / 2 - imgPoint.Y * ratio);
-
+            
             //이미지가 범위를 벗어난 경우를 대비
             if (imgRect.X > 0) imgRect.X = 0;
             if (imgRect.Y > 0) imgRect.Y = 0;
             if (imgRect.X + imgRect.Width < pictureBox1.Width) imgRect.X = pictureBox1.Width - imgRect.Width;
             if (imgRect.Y + imgRect.Height < pictureBox1.Height) imgRect.Y = pictureBox1.Height - imgRect.Height;
-
             pictureBox1.Invalidate();
         }
 
@@ -244,7 +212,6 @@ namespace img_filter
             if (pictureBox1.Image != null)
             {
                 e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-
                 e.Graphics.DrawImage(pictureBox1.Image, imgRect);
                 pictureBox1.Focus();
             }
@@ -275,9 +242,7 @@ namespace img_filter
             {
                 LastPoint = e.Location;
             }
-
             imgPoint = new System.Drawing.Point(e.X, e.Y);
-
             pictureBox1.Invalidate();
         }
         #endregion
@@ -286,11 +251,8 @@ namespace img_filter
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
             threshold_Value = trackBar1.Value;
-
             Cv2.Threshold(Filter, Threshold, threshold_Value, 255, ThresholdTypes.Binary);
-
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Threshold);
-
             label5.Text = "" + trackBar1.Value;
         }
 
