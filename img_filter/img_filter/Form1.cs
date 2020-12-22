@@ -25,6 +25,10 @@ namespace img_filter
         //테이블 선언 
         DataTable table = new DataTable();
 
+        //그리기
+        private float zoomRatio = 1.0f;
+        private double recRatio = 3.6875;
+
         public Form1()
         {
             InitializeComponent();
@@ -33,17 +37,19 @@ namespace img_filter
             this.button1.Click += new System.EventHandler(this.button1_Click);
             this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
 
+            //Slider
             trackBar1.Maximum = 255;
             trackBar1.TickFrequency = 10;
-            trackBar1.LargeChange = 3;
             trackBar1.SmallChange = 1;
 
             //콤보박스
-            this.comboBox1.Items.AddRange(new object[] {"Blur",
-                        "Box",
-                        "Median",
-                        "Gaussian",
-                        "Bilateral"});
+            this.comboBox1.Items.AddRange(new object[] 
+            {       "Blur",
+                    "Box",
+                    "Median",
+                    "Gaussian",
+                    "Bilateral"
+            });
 
             //테이블 
             table.Columns.Add("Index", typeof(string));
@@ -64,7 +70,6 @@ namespace img_filter
             //확대 축소
             this.AllowDrop = true;
             this.DragEnter += new DragEventHandler(pictureBox1_DragEnter);
-
             pictureBox1.MouseWheel += new MouseEventHandler(pictureBox1_MouseWheel);
             imgPoint = new System.Drawing.Point(pictureBox1.Width / 2, pictureBox1.Height / 2);
             imgRect = new Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height); //확대, 축소 이미지를 Handling 
@@ -72,7 +77,6 @@ namespace img_filter
             clickPoint = imgPoint;
             pictureBox1.Invalidate();
         }
-
         //블럭화
         private void button1_Click(object sender, EventArgs e)
         {
@@ -151,9 +155,16 @@ namespace img_filter
             }
             pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Filter);
         }
-
+        //Threshold
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+            threshold_Value = trackBar1.Value;
+            Cv2.Threshold(Filter, Threshold, threshold_Value, 255, ThresholdTypes.Binary);
+            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Threshold);
+            label5.Text = "" + trackBar1.Value;
+        }
         //결과이미지중 원하는 결과 확인하기 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             Mat MyImage_clone = MyImage.Clone();
             pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage);
@@ -161,23 +172,18 @@ namespace img_filter
             Cv2.Rectangle(MyImage_clone, Value_boundingRect, Scalar.Green, 2);
             pictureBox1.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(MyImage_clone);
         }
-        
-        #region 드래그
-        void pictureBox1_DragEnter(object sender, DragEventArgs e)
+        #region 이미지 박스 이벤트
+        private void pictureBox1_DragEnter(object sender, DragEventArgs e)
         {
             var data = e.Data.GetData(DataFormats.FileDrop);
             var fileName = data as string[];
             MyImage = Cv2.ImRead(fileName[0]);
             pictureBox1.Image = Image.FromFile(fileName[0]);
         }
-        #endregion
-
-        #region 확대 축소 
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
             int lines = e.Delta * SystemInformation.MouseWheelScrollLines / 120;
             PictureBox pb = (PictureBox)sender;
-
             if (lines > 0)
             {
                 ratio *= 1.1F;
@@ -198,15 +204,26 @@ namespace img_filter
             imgRect.Height = (int)Math.Round(pictureBox1.Height * ratio);
             imgRect.X = (int)Math.Round(pb.Width / 2 - imgPoint.X * ratio);
             imgRect.Y = (int)Math.Round(pb.Height / 2 - imgPoint.Y * ratio);
-            
+
             //이미지가 범위를 벗어난 경우를 대비
-            if (imgRect.X > 0) imgRect.X = 0;
-            if (imgRect.Y > 0) imgRect.Y = 0;
-            if (imgRect.X + imgRect.Width < pictureBox1.Width) imgRect.X = pictureBox1.Width - imgRect.Width;
-            if (imgRect.Y + imgRect.Height < pictureBox1.Height) imgRect.Y = pictureBox1.Height - imgRect.Height;
+            if (imgRect.X > 0)
+            {
+                imgRect.X = 0;
+            }
+            if (imgRect.Y > 0)
+            {
+                imgRect.Y = 0;
+            }
+            if (imgRect.X + imgRect.Width < pictureBox1.Width)
+            {
+                imgRect.X = pictureBox1.Width - imgRect.Width;
+            }
+            if (imgRect.Y + imgRect.Height < pictureBox1.Height)
+            {
+                imgRect.Y = pictureBox1.Height - imgRect.Height;
+            }
             pictureBox1.Invalidate();
         }
-
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {       
             if (pictureBox1.Image != null)
@@ -216,27 +233,44 @@ namespace img_filter
                 pictureBox1.Focus();
             }
         }
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
 
-        //마우스에 따른 시점 이동 
+        }
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
+                //마우스 버튼 다운 시 처음 시작 포인트 저장하기
                 clickPoint = new System.Drawing.Point(e.X, e.Y);
             }
             pictureBox1.Invalidate();
         }
-
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
+                //마우스 시점이동
                 imgRect.X = imgRect.X + (int)Math.Round((double)(e.X - clickPoint.X) / 5);
-                if (imgRect.X >= 0) imgRect.X = 0;
-                if (Math.Abs(imgRect.X) >= Math.Abs(imgRect.Width - pictureBox1.Width)) imgRect.X = -(imgRect.Width - pictureBox1.Width);
+                if (imgRect.X >= 0)
+                {
+                    imgRect.X = 0;
+                }
+                if (Math.Abs(imgRect.X) >= Math.Abs(imgRect.Width - pictureBox1.Width))
+                {
+                    imgRect.X = -(imgRect.Width - pictureBox1.Width);
+                }
                 imgRect.Y = imgRect.Y + (int)Math.Round((double)(e.Y - clickPoint.Y) / 5);
-                if (imgRect.Y >= 0) imgRect.Y = 0;
-                if (Math.Abs(imgRect.Y) >= Math.Abs(imgRect.Height - pictureBox1.Height)) imgRect.Y = -(imgRect.Height - pictureBox1.Height);
+                if (imgRect.Y >= 0)
+                {
+                    imgRect.Y = 0;
+                }
+                if (Math.Abs(imgRect.Y) >= Math.Abs(imgRect.Height - pictureBox1.Height))
+                {
+                    imgRect.Y = -(imgRect.Height - pictureBox1.Height);
+                }
+                //그리기
+                Pen pn = new Pen(Color.Black); //라인을 그릴 펜
             }
             else
             {
@@ -246,15 +280,5 @@ namespace img_filter
             pictureBox1.Invalidate();
         }
         #endregion
-
-        //Threshold
-        private void trackBar1_Scroll(object sender, EventArgs e)
-        {
-            threshold_Value = trackBar1.Value;
-            Cv2.Threshold(Filter, Threshold, threshold_Value, 255, ThresholdTypes.Binary);
-            pictureBox2.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(Threshold);
-            label5.Text = "" + trackBar1.Value;
-        }
-
     }
 }
